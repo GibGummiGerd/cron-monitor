@@ -20,7 +20,21 @@ ping_base = "https://hc-ping.com"
 # Hard kill after this many seconds (per job overridable).
 timeout = 3600
 
-# What to do when the previous run is still active: skip | fail | kill_previous
+# What to do when the previous run of this job is still active (its flock is
+# held) and cron starts a new run. In all cases the new run's command is NOT
+# started:
+#   skip           - new run exits immediately with code 3, no ping; the
+#                    running job is left untouched. With ping_on_skip = true
+#                    a success ping (with a note) is sent anyway so the
+#                    check does not go late during a long, healthy run.
+#   fail           - the collision is treated as an error: a /fail ping is
+#                    sent, exit code 1. Use when overlaps should never
+#                    happen and you want to be alerted.
+#   kill_previous  - the new run takes over: SIGTERM (then SIGKILL after 2 s)
+#                    is sent to the previous run's process group, the lock is
+#                    taken and the new run proceeds. Falls back to "skip"
+#                    behaviour if killing/acquiring fails.
+# (per job overridable)
 on_overlap = "skip"
 
 # Write stdout+stderr of each run to a per-run log file under log_dir

@@ -10,8 +10,7 @@ Overlap-Schutz, Timeouts. Reine Python-Stdlib, keine Abhängigkeiten.
   Disk-Spool: geht ein Ping (z. B. bei Netzausfall) verloren, wird er beim
   nächsten Lauf nachgesendet - kein Signal geht verloren.
 - Pings sind isoliert: Monitoring kann das Ergebnis des Jobs nie verändern.
-- Per-Job-flock verhindert überlappende Läufe (`on_overlap = skip | fail |
-  kill_previous`), optional Success-Ping bei Skip (`ping_on_skip`).
+- Per-Job-flock verhindert überlappende Läufe (siehe `on_overlap` unten).
 - Hard-Timeout killt die ganze Prozessgruppe, SIGTERM/SIGINT werden
   weitergeleitet.
 - stdout+stderr pro Lauf in eine Logdatei (optional: `log_to_file = false`,
@@ -60,6 +59,24 @@ nachsenden), `test <job>` (Start+Success-Testpings senden).
 
 Exit-Codes: der Exit-Code des Jobs wird durchgereicht; 2 = Config-/Usage-Fehler,
 3 = Job wegen Overlap übersprungen.
+
+## Überlappende Läufe: `on_overlap`
+
+Jeder Job hält ein advisory `flock` auf `lock_dir/<job>.lock`, solange er
+läuft (inkl. der PID des Laufs in der Lock-Datei). Startet Cron den Job
+erneut, während der vorige Lauf noch aktiv ist (Lock belegt), entscheidet
+`on_overlap`, was passiert - der Befehl des neuen Laufs wird in allen
+Fällen **nicht gestartet**:
+
+| Policy | Verhalten |
+|---|---|
+| `skip` (Default) | Der neue Lauf beendet sich sofort mit Exit-Code 3, es wird kein Ping gesendet - der laufende Job bleibt unangetastet. Mit `ping_on_skip = true` wird trotzdem ein Success-Ping (mit Hinweistext) gesendet, damit der healthchecks-Check nicht "late" geht, während ein langer, gesunder Lauf aktiv ist. |
+| `fail` | Der neue Lauf wertet die Kollision als Fehler: Es wird ein `/fail`-Ping mit Hinweistext gesendet und mit Exit-Code 1 beendet. Sinnvoll, wenn sich überlappende Läufe von selbst nie ergeben sollten und du alarmiert werden willst. |
+| `kill_previous` | Der neue Lauf übernimmt: Er sendet der Prozessgruppe des alten Laufs (PID aus der Lock-Datei) SIGTERM, wartet 2 s und eskaliert bei Bedarf auf SIGKILL, nimmt dann das Lock und startet. Schlägt das Killen/Akquirieren fehl, verhält es sich wie `skip`. Sinnvoll bei hart hängenden Jobs. |
+
+Beachten: `ping_on_skip` gilt nur in Kombination mit `skip` (bzw. dem
+Fallback-Pfad von `kill_previous`) und ist ein Success-Signal - ein echtes
+Problem des laufenden Jobs meldet weiterhin dessen eigener Exit-Code.
 
 ## Entwicklung
 

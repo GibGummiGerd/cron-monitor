@@ -29,9 +29,12 @@ Robustness properties:
     signal permanently.
   * Pings are fully isolated from the job: a ping/network problem can never
     alter the job's exit code or turn a success into a reported failure.
-  * Per-job flock prevents overlapping runs; policy: skip | fail |
-    kill_previous. With ping_on_skip = true a skipped run still sends a
-    success ping (the previous run is still busy - a healthy state).
+  * Per-job flock prevents overlapping runs; policy (on_overlap):
+    skip (default) - new run exits with code 3, running job untouched,
+    no ping (or a success ping with ping_on_skip = true); fail - the
+    collision is reported via a /fail ping and exit code 1; kill_previous -
+    the previous run's process group is SIGTERM/SIGKILLed and the new run
+    takes over.
   * Hard per-job timeout kills the whole process group (no orphans).
   * SIGTERM/SIGINT are forwarded to the job's process group.
   * stdout+stderr are written to a per-run log file (unless log_to_file is
