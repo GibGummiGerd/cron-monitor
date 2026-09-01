@@ -140,6 +140,8 @@ class CronMonitorTests(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertIn("demo", buf.getvalue())
 
+    @unittest.skipUnless(cron_monitor.IS_POSIX,
+                         "flock overlap is a no-op on Windows")
     def test_skip_pings_success_with_ping_on_skip(self):
         # A run that overlaps a busy previous run and is skipped must
         # still send a success ping when ping_on_skip is enabled.
@@ -159,6 +161,8 @@ class CronMonitorTests(unittest.TestCase):
         ])
         first_lock.release()
 
+    @unittest.skipUnless(cron_monitor.IS_POSIX,
+                         "flock overlap is a no-op on Windows")
     def test_skip_does_not_ping_by_default(self):
         cfg = make_config(self.tmp)
         first_lock = cron_monitor.JobLock(self.tmp / "locks" / "demo.lock")
