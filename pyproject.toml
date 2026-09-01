@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cron-monitor"
+version = "0.1.0"
+description = "Run cron jobs and report their outcome to healthchecks.io, robustly."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Christian Giel" }]
+# stdlib only - intentionally no runtime dependencies
+dependencies = []
+
+[project.scripts]
+cron-monitor = "cron_monitor.cli:main_entry"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cron_monitor"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

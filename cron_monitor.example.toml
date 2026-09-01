@@ -1,0 +1,49 @@
+# =============================================================================
+# cron_monitor configuration - copy to /etc/cron_monitor.toml (or pass -c <path>)
+# Requires Python >= 3.11. See src/cron_monitor/cli.py for the full documentation.
+# =============================================================================
+
+[defaults]
+# Base ping URL of your healthchecks instance (without the check UUID).
+ping_base = "https://status.chgiel.com/hc/ping"
+
+# Directories. Relative paths resolve against the directory of this file.
+# spool_dir holds pings that could not be delivered (retry queue on disk).
+# log_dir  gets one sub-directory per job with per-run log files.
+# lock_dir holds the per-job flock files.
+# spool_dir = "/var/spool/cron_monitor"
+# log_dir   = "/var/log/cron_monitor"
+# lock_dir  = "/run/lock/cron_monitor"
+
+# Hard kill after this many seconds (per job overridable).
+timeout = 3600
+
+# What to do when the previous run is still active: skip | fail | kill_previous
+on_overlap = "skip"
+
+# Write stdout+stderr of each run to a per-run log file under log_dir
+# (default: true). Set to false if the job already logs itself; then the
+# job's output passes through to the monitor's own stdout/stderr and the
+# /fail ping carries no log tail.
+log_to_file = true
+
+# --- Jobs -------------------------------------------------------------------
+# One table per cron job. `uuid` is the check UUID from the healthchecks UI.
+# The crontab only references the job name:
+#   0 3 * * * /usr/bin/python3 /opt/cron_monitor/cron_monitor.py run collect-stats
+
+[jobs.collect-stats]
+uuid = "6fa6dba2-e1f5-48fd-bd94-21c25078b268"
+command = ["/usr/bin/python3", "/srv/project/collect.py"]
+cwd = "/srv/project"
+timeout = 1800
+on_overlap = "kill_previous"
+
+[jobs.collect-stats.env]
+PYTHONUNBUFFERED = "1"
+
+[jobs.db-backup]
+uuid = "00000000-0000-0000-0000-000000000000"
+command = ["/srv/project/backup.sh"]
+timeout = 7200
+on_overlap = "skip"
