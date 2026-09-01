@@ -5,7 +5,9 @@
 
 [defaults]
 # Base ping URL of your healthchecks instance (without the check UUID).
-ping_base = "https://status.chgiel.com/hc/ping"
+# For hosted healthchecks.io this is "https://hc-ping.com";
+# for self-hosted instances e.g. "https://hc.example.com/hc/ping".
+ping_base = "https://hc-ping.com"
 
 # Directories. Relative paths resolve against the directory of this file.
 # spool_dir holds pings that could not be delivered (retry queue on disk).
@@ -28,12 +30,12 @@ on_overlap = "skip"
 log_to_file = true
 
 # --- Jobs -------------------------------------------------------------------
-# One table per cron job. `uuid` is the check UUID from the healthchecks UI.
-# The crontab only references the job name:
-#   0 3 * * * /usr/bin/python3 /opt/cron_monitor/cron_monitor.py run collect-stats
+# One table per cron job. `uuid` is the check UUID from the healthchecks UI
+# (replace the placeholders below). The crontab only references the job name:
+#   0 3 * * * /home/ubuntu/.local/bin/cron-monitor -c /srv/project/cron_monitor.toml run collect-stats
 
 [jobs.collect-stats]
-uuid = "6fa6dba2-e1f5-48fd-bd94-21c25078b268"
+uuid = "00000000-0000-0000-0000-000000000001"
 command = ["/usr/bin/python3", "/srv/project/collect.py"]
 cwd = "/srv/project"
 timeout = 1800
@@ -43,7 +45,7 @@ on_overlap = "kill_previous"
 PYTHONUNBUFFERED = "1"
 
 [jobs.db-backup]
-uuid = "00000000-0000-0000-0000-000000000000"
+uuid = "00000000-0000-0000-0000-000000000002"
 command = ["/srv/project/backup.sh"]
 timeout = 7200
 on_overlap = "skip"
