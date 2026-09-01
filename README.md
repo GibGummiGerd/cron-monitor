@@ -52,7 +52,7 @@ timeout = 1800
 Crontab (eine Zeile, kein `&&`/`||` nötig):
 
 ```
-*/30 * * * * /home/ubuntu/.local/bin/cron-monitor -c /srv/project/cron_monitor.toml run my-job
+*/30 * * * * ~/.local/bin/cron-monitor -c /srv/project/cron_monitor.toml run my-job
 ```
 
 Weitere Subcommands: `list` (Jobs anzeigen), `flush` (gespoolte Pings

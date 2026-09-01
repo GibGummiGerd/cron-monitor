@@ -32,7 +32,7 @@ log_to_file = true
 # --- Jobs -------------------------------------------------------------------
 # One table per cron job. `uuid` is the check UUID from the healthchecks UI
 # (replace the placeholders below). The crontab only references the job name:
-#   0 3 * * * /home/ubuntu/.local/bin/cron-monitor -c /srv/project/cron_monitor.toml run collect-stats
+#   0 3 * * * ~/.local/bin/cron-monitor -c /srv/project/cron_monitor.toml run collect-stats
 
 [jobs.collect-stats]
 uuid = "00000000-0000-0000-0000-000000000001"
